@@ -1,0 +1,395 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.header {
+    width: 100%;
+    height: 100px;
+    background-color: blue;
+}
+
+.center {
+    width: 100%;
+}
+
+.item-1 {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 60%;
+}
+
+.item-1_center {
+    width: 70%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 3%;
+
+}
+
+.item-1_center h3 {
+    color: red;
+    font-style: italic;
+    font-size: 1.4rem;
+}
+
+.item-01_rigth {
+    height: 300px;
+    width: 20%;
+    background-color: rgba(175, 179, 179, 0.357);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-radius: 5%;
+    border: 1px solid #7b7b7b76;
+    font-size: 1.1rem;
+}
+
+.item-01_rigth h2 {
+    transform: translate(11%, -100%);
+    margin: 3%;
+    font-weight: 600;
+}
+
+.item-01_rigth p {
+    transform: translate(12%, 20%);
+    margin: 3%;
+    font-weight: 600;
+}
+
+.item-01_rigth p:nth-child(2) {
+    color: red;
+}
+
+.item-01_rigth p:nth-child(3) {
+    color: green;
+}
+
+.item-01_rigth p:nth-child(4) {
+    color: blue;
+}
+
+.center-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    text-align: center;
+}
+
+/* !------------------------------ */
+.item-2 {
+    overflow-y: auto;
+    height: 400px;
+    background-color: rgb(224, 224, 224);
+    margin-left: 1%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.item-2 h2 {
+    margin-top: 2%;
+    color: rgb(250, 8, 8);
+    font-weight: 600;
+}
+
+
+#cycle-table {
+    width: 90%;
+    /* Chiều rộng toàn bộ bảng */
+    border-collapse: collapse;
+    /* Gộp các đường viền */
+    margin: 20px 0;
+    /* Khoảng cách trên và dưới bảng */
+    font-size: 16px;
+    /* Kích thước chữ */
+}
+
+#cycle-table th,
+#cycle-table td {
+    border: 1px solid #ddd;
+    /* Đường viền xung quanh ô */
+    text-align: left;
+    /* Căn trái văn bản */
+    padding: 8px;
+    /* Khoảng cách bên trong ô */
+}
+
+#cycle-table th {
+    background-color: #4CAF50;
+    /* Màu nền cho tiêu đề */
+    color: rgb(13, 12, 12);
+    /* Màu chữ cho tiêu đề */
+}
+
+#cycle-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+    /* Màu nền cho hàng chẵn */
+}
+
+#cycle-table tr:hover {
+    background-color: #ddd;
+    /* Màu nền khi di chuột vào hàng */
+}
+
+/* !------------------------------ */
+
+.item-3 {
+    margin-right: 1%;
+    height: 400px;
+    background-color: rgb(224, 224, 224);
+    display: flex;
+}
+
+.item-3_left {
+    width: 50%;
+    background-color: rgb(224, 224, 224);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-right: 1px solid #333;
+}
+
+.item-3_left h2 {
+    color: rgb(234, 32, 32);
+    margin-top: 4%;
+    margin-bottom: 4%;
+
+}
+
+.item-3_left button {
+    width: 80%;
+    height: 9%;
+    margin-bottom: 1.5%;
+    font-weight: 600;
+    border: 2px solid rgb(202, 98, 226);
+    border-radius: 10px;
+    line-height: 9%;
+}
+
+.item-3_left button:nth-child(2) {
+    background-color: rgba(255, 3, 3, 0.914);
+}
+
+.item-3_left button:nth-child(3) {
+    background-color: rgba(255, 3, 3, 0.914);
+}
+
+.item-3_left button:nth-child(4) {
+    background-color: rgba(255, 242, 3, 0.914);
+}
+
+.item-3_left button:nth-child(5) {
+    background-color: rgba(255, 242, 3, 0.914);
+}
+
+.item-3_left button:nth-child(6) {
+    background-color: rgba(0, 51, 255, 0.653);
+}
+
+.item-3_left button:nth-child(7) {
+    background-color: rgba(0, 51, 255, 0.653);
+}
+
+.item-3_left button:nth-child(8) {
+    background-color: #00ff51e9;
+
+}
+
+.item-3_left button:nth-child(9) {
+    background-color: #00ff51e9;
+
+}
+
+
+
+.item-3_rigth {
+    width: 50%;
+    height: 100%;
+    background-color: rgb(224, 224, 224);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.item-3_rigth h2 {
+    color: rgb(234, 32, 32);
+    margin-top: 4%;
+    margin-bottom: 4%;
+}
+
+.item-3_rigth div:nth-child(2) {
+    transform: translate(0, 5%);
+    width: 90%;
+    height: 150px;
+    display: flex;
+}
+
+.item-3_rigth div:nth-child(2) img {
+    width: 50%;
+    border: 1px solid #333;
+
+}
+
+.item-3_rigth div:nth-child(2) img:nth-child(1) {
+    width: 50%;
+    border-right: none;
+
+}
+
+.item-3_rigth div:nth-child(3) {
+    transform: translate(0, 5%);
+    width: 90%;
+    height: 150px;
+    height: 40;
+    display: flex;
+}
+
+.item-3_rigth div:nth-child(3) img {
+    width: 50%;
+    border: 1px solid #333;
+
+}
+
+.item-3_rigth div:nth-child(3) img:nth-child(1) {
+    border-right: none;
+}
+
+
+/* !------------------------------ */
+.center-list_02 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    text-align: center;
+    margin-top: 1%;
+}
+
+.item_02 {
+    overflow-y: auto;
+    height: 400px;
+    background-color: rgb(224, 224, 224);
+    margin-left: 1%;
+    display: flex;
+    align-items: center;
+}
+
+.item_02 div:nth-child(1) {
+    width: 50%;
+    height: 100%;
+    border-right: 1px solid #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2%;
+}
+
+.item_02 div:nth-child(1) h2 {
+    margin-top: 3%;
+    color: red;
+
+}
+
+.item_02 div:nth-child(1) button {
+    width: 80%;
+    height: 10%;
+    background-color: #1233f0b9;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 10px;
+    border: none;
+
+}
+
+button {
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+}
+
+button:hover {
+    opacity: 0.6;
+    transform: scale(1.1);
+
+}
+
+
+
+.item_02 div:nth-child(2) {
+    width: 50%;
+    height: 100%;
+}
+
+.item_02 div:nth-child(2) h2 {
+    margin-top: 3%;
+    color: red;
+
+}
+
+.item_02 div:nth-child(2) p:nth-child(2) {
+    margin-top: 3%;
+    color: rgb(234, 43, 10);
+
+}
+
+.item_02 div:nth-child(2) p:nth-child(3) {
+    margin-top: 3%;
+    color: rgb(121, 9, 233);
+    ;
+
+}
+
+/* !==================item_03 chart cột================== */
+.item_03 {
+    margin-right: 1%;
+    height: 400px;
+    background-color: rgb(224, 224, 224);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.item_03 h2 {
+    margin-top: 2%;
+    color: red;
+}
+
+.item_03 div:nth-child(2) {
+    margin-top: 1%;
+    width: 90%;
+    height: 10%;
+    background-color: #c5c7c6;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    font-weight: 600;
+    font-style: italic;
+    border-radius: 10px;
+    border: 1px solid #33333374;
+
+}
+
+.item_03 div:nth-child(2) p:nth-child(1) {
+    color: red;
+}
+
+.item_03 div:nth-child(2) p:nth-child(2) {
+    color: rgb(238, 255, 0);
+}
+
+.item_03 div:nth-child(2) p:nth-child(3) {
+    color: blue;
+}
+
+.item_03 div:nth-child(2) p:nth-child(4) {
+    color: green;
+}
+
+.item_03 div:nth-child(3) {}
+
+.footer {}

@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ESP Firebase App</title>
+    <link rel="stylesheet" href="css.css" />
+    <link rel="stylesheet" href="asset/css/style.css">
+    <!-- link icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+        integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+    <!-- !==================================== -->
+    <script type="module">
+      // Import Firebase SDK
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+      import {
+        getDatabase,
+        ref,
+        onValue,
+        set,
+      } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js";
+
+      // Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyCfPoYMLlbmJ1-Nq6ROigDlbtPlbpXyXvM",
+        authDomain: "test01-854a3.firebaseapp.com",
+        databaseURL:
+          "https://test01-854a3-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "test01-854a3",
+        storageBucket: "test01-854a3.appspot.com",
+        messagingSenderId: "649044241602",
+        appId: "1:649044241602:web:5c5f1165fa590cfdf19f5b",
+        measurementId: "G-8P8MMNTCKR",
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const database = getDatabase(app);
+
+       //LDR ----------------------------
+       // Lấy dữ liệu ánh sáng từ Firebase và hiển thị trực tiếp ra màn hình
+      const lightValueRef = ref(database, "LDR/light_value");
+      onValue(lightValueRef, (snapshot) => {
+        const lightValue = snapshot.val();
+        console.log("Giá trị ánh sáng nhận được từ Firebase:", lightValue); // Dòng kiểm tra giá trị nhận được
+
+        if (lightValue !== null) {
+          // Hiển thị giá trị ánh sáng thô trực tiếp từ Firebase
+          document.getElementById("lightValue").innerText = lightValue; // Hiển thị giá trị ánh sáng
+
+          // Xác định tình trạng độ sáng và hiển thị
+          let lightCondition;
+          let imageUrl;
+
+          if (lightValue >= 2500) { // Giả sử 800 là mức ánh sáng mạnh
+            lightCondition = "Ánh sáng mạnh";
+            imageUrl = "img/manh.png"; // Hình ảnh cho ánh sáng mạnh
+          } else if (lightValue >= 2000 && lightValue < 2500) { // Mức ánh sáng tốt
+            lightCondition = "Ánh sáng tốt";
+            imageUrl = "img/tot.png"; // Hình ảnh cho ánh sáng tốt
+          } else if (lightValue >= 1600 && lightValue < 2000) { // Mức ánh sáng trung bình
+            lightCondition = "Ánh sáng trung bình";
+            imageUrl = "img/tb.png"; // Hình ảnh cho ánh sáng trung bình
+          } else if (lightValue >= 0 && lightValue < 1600) { // Mức ánh sáng yếu
+            lightCondition = "Ánh sáng yếu";
+            imageUrl = "img/min.png"; // Hình ảnh cho ánh sáng yếu
+          } else {
+            lightCondition = "Không có giá trị nào!";
+            imageUrl = "img/null.png"; // Hình ảnh khi không có giá trị
+          }
+
+          // Cập nhật tình trạng độ sáng và hình ảnh trên giao diện
+          document.getElementById("LDR_tinhtrang").innerText = lightCondition;
+          document.getElementById("conditionImage").src = imageUrl; // Thay đổi ảnh dựa trên tình trạng
+        } else {
+          console.warn("Không có dữ liệu cho LDR/light_value"); // Cảnh báo khi không có dữ liệu
+          document.getElementById("lightValue").innerText = "Không có dữ liệu";
+          document.getElementById("LDR_tinhtrang").innerText = "Không có giá trị nào!";
+          document.getElementById("conditionImage").src = "img/null.png"; // Hình ảnh mặc định khi không có dữ liệu
+        }
+      });
+
+      // Lấy dữ liệu ánh sáng từ Firebase và lưu vào bảng
+    onValue(lightValueRef, (snapshot) => {
+      const lightValue = snapshot.val();
+      
+      if (lightValue !== null) {
+        // Hiển thị giá trị ánh sáng
+        document.getElementById("lightValue").innerText = lightValue;
+
+        // Lấy thời gian hiện tại
+        const currentTime = new Date().toLocaleTimeString();
+
+        // Thêm dữ liệu mới vào bảng
+        const tableBody = document.getElementById("lightDataTableBody");
+        const newRow = document.createElement("tr");
+        newRow.innerHTML = `
+          <td>${currentTime}</td>
+          <td>${lightValue}</td>
+        `;
+        tableBody.insertBefore(newRow, tableBody.firstChild); // Thêm dữ liệu mới lên đầu bảng
+      } else {
+        console.warn("Không có dữ liệu cho LDR/light_value");
+        document.getElementById("lightValue").innerText = "Không có dữ liệu";
+      }
+    });
+
+
+
+      // Functions to handle LED control -------------------
+      function batLED(pin) {
+        set(ref(database, `LED/LED_PIN_${pin}`), true);
+      }
+
+      function tatLED(pin) {
+        set(ref(database, `LED/LED_PIN_${pin}`), false);
+      }
+
+      // Make these functions available globally
+      window.batLED = batLED;
+      window.tatLED = tatLED;
+
+      // Đường dẫn csdl
+      var temperaturePath = "DHT/temperature";
+      var humidityPath = "DHT/humidity";
+
+      // Get a database reference
+      const tempRef = ref(database, temperaturePath);
+      const humidityRef = ref(database, humidityPath);
+
+      // Biến để lưu giá trị hiện tại
+      var currentTemperature = 0;
+      var currentHumidity = 0;
+
+      var xValues = [];
+      var tempData = [];
+      var tempFData = [];
+      var humidityData = [];
+
+      // Biến để lưu giá trị hiện tại và chu kỳ
+      var currentTemperature = 0;
+      var currentHumidity = 0;
+      var cycleData = []; // Mảng lưu các chu kỳ nhiệt độ
+      var cycleCount = 0; // Đếm số lần dữ liệu được thêm vào biểu đồ
+      const MAX_CYCLE_COUNT = 10;
+
+      // Create chart
+      var myChart = new Chart("myChart", {
+        type: "line",
+        data: {
+          labels: xValues,
+          datasets: [
+            {
+              label: "Nhiệt độ (°C)",
+              borderColor: "red",
+              fill: false,
+              data: tempData,
+            },
+            {
+              label: "Nhiệt độ (°F)",
+              borderColor: "green",
+              fill: false,
+              data: tempFData,
+            },
+            {
+              label: "Độ ẩm (%)",
+              borderColor: "blue",
+              fill: false,
+              data: humidityData,
+            },
+          ],
+        },
+        options: {
+          legend: { display: true },
+        },
+      });
+
+      // Function to update chart -----------------------
+      function updateChart() {
+        const currentTime = new Date().toLocaleTimeString();
+        xValues.push(currentTime);
+        tempData.push(currentTemperature);
+        tempFData.push((currentTemperature * 9) / 5 + 32);
+        humidityData.push(currentHumidity);
+        myChart.update();
+        cycleCount++;
+
+        // Lưu dữ liệu vào localStorage
+        localStorage.setItem(
+          "chartData",
+          JSON.stringify({
+            tempData,
+            tempFData,
+            humidityData,
+            xValues,
+          })
+        );
+
+        // Nếu đã đủ 10 dữ liệu, lưu chu kỳ và reset biểu đồ
+        if (cycleCount >= MAX_CYCLE_COUNT) {
+          saveCycle(); // Lưu chu kỳ hiện tại
+          resetChart(); // Reset biểu đồ để bắt đầu chu kỳ mới
+        }
+      }
+
+      // Lưu chu kỳ -----------------------
+      function saveCycle() {
+        var cycleSnapshot = {
+          temperatures: [...tempData],
+          humidities: [...humidityData],
+          time: [...xValues],
+        };
+        cycleData.push(cycleSnapshot);
+        console.log("Chu kỳ đã lưu: ", cycleSnapshot);
+
+        // Lưu dữ liệu vào localStorage
+        localStorage.setItem("cycleData", JSON.stringify(cycleData));
+
+        // Hiển thị dữ liệu trong bảng
+        displayCycleData(cycleSnapshot);
+      }
+
+      // Hiển thị dữ liệu chu kỳ trong bảng------------------------------
+      function displayCycleData(cycleSnapshot) {
+        const table = document.getElementById("cycle-table-body");
+
+        // Hiển thị từng mục nhiệt độ, độ ẩm và thời gian
+        for (let i = 0; i < cycleSnapshot.temperatures.length; i++) {
+          let tempC = cycleSnapshot.temperatures[i];
+          let tempF = (tempC * 9) / 5 + 32;
+          let humidity = cycleSnapshot.humidities[i];
+          let time = cycleSnapshot.time[i];
+
+          // Tạo một hàng mới cho mỗi lần lặp
+          let newRow = document.createElement("tr");
+
+          // Tạo các ô dữ liệu và thêm vào hàng mới
+          newRow.innerHTML = `
+                  <td>${time}</td>
+                  <td>${tempC.toFixed(2)}°C</td>
+                  <td>${tempF.toFixed(2)}°F</td>
+                  <td>${humidity.toFixed(2)}%</td>
+              `;
+
+          // Chèn hàng mới vào đầu bảng
+          table.insertBefore(newRow, table.firstChild);
+        }
+      }
+
+      // Reset biểu đồ -------------------------
+      function resetChart() {
+        tempData.length = 0;
+        tempFData.length = 0;
+        humidityData.length = 0;
+        xValues.length = 0;
+        cycleCount = 0;
+        myChart.update();
+        localStorage.removeItem("chartData"); // Xóa dữ liệu biểu đồ khỏi localStorage khi reset
+        console.log("Biểu đồ đã được reset");
+      }
+
+      // Cập nhật dữ liệu từ Firebase nhiệt độ --------------------------
+      onValue(tempRef, (snapshot) => {
+        currentTemperature = snapshot.val();
+        trangthainhietdo(currentTemperature);
+        document.getElementById("reading-int").innerHTML = currentTemperature;
+        document.getElementById("reading-f").innerHTML = (
+          (currentTemperature * 9) / 5 +
+          32
+        ).toFixed(2);
+        updateChart();
+        checkTemperature(currentTemperature);
+      });
+
+      onValue(humidityRef, (snapshot) => {
+        currentHumidity = snapshot.val();
+        document.getElementById("reading-float").innerHTML = currentHumidity;
+        updateChart();
+      });
+
+      // led ------------------------------------------------
+
+      const dbled01 = ref(database, "LED/LED_PIN_1");
+      const dbled02 = ref(database, "LED/LED_PIN_2");
+      const dbled03 = ref(database, "LED/LED_PIN_3");
+      const dbled04 = ref(database, "LED/LED_PIN_4");
+
+      onValue(dbled01, (snapshot) => {
+        //red
+        const dataled01 = snapshot.val(); // Lấy giá trị boolean từ snapshot
+
+        // Khai báo biến dataledred và redled
+        let dataledred;
+        let redled;
+
+        // Gán giá trị cho biến dataledred và redled dựa trên giá trị của dataled01
+        if (dataled01) {
+          dataledred = true; // Nếu giá trị là true
+          redled = 1;
+        } else {
+          dataledred = false; // Nếu giá trị là false
+          redled = 0;
+        }
+
+        // Cập nhật thuộc tính src của img dựa trên giá trị của redled
+        const imgElement = document.getElementById("red"); // Thay đổi ID nếu cần
+        imgElement.src = redled === 1 ? "./img/red.png" : "./img/no.png"; // Thay đổi src
+      });
+
+      onValue(dbled02, (snapshot) => {
+        //yellow
+        const dataled01 = snapshot.val(); // Lấy giá trị boolean từ snapshot
+
+        // Khai báo biến dataledred và redled
+        let dataledred;
+        let redled;
+
+        // Gán giá trị cho biến dataledred và redled dựa trên giá trị của dataled01
+        if (dataled01) {
+          dataledred = true; // Nếu giá trị là true
+          redled = 1;
+        } else {
+          dataledred = false; // Nếu giá trị là false
+          redled = 0;
+        }
+
+        // Cập nhật thuộc tính src của img dựa trên giá trị của redled
+        const imgElement = document.getElementById("yellow"); // Thay đổi ID nếu cần
+        imgElement.src = redled === 1 ? "./img/yellow.png" : "./img/no.png"; // Thay đổi src
+      });
+
+      onValue(dbled03, (snapshot) => {
+        // blue
+        const dataled01 = snapshot.val(); // Lấy giá trị boolean từ snapshot
+
+        // Khai báo biến dataledred và redled
+        let dataledred;
+        let redled;
+
+        // Gán giá trị cho biến dataledred và redled dựa trên giá trị của dataled01
+        if (dataled01) {
+          dataledred = true; // Nếu giá trị là true
+          redled = 1;
+        } else {
+          dataledred = false; // Nếu giá trị là false
+          redled = 0;
+        }
+
+        // Cập nhật thuộc tính src của img dựa trên giá trị của redled
+        const imgElement = document.getElementById("blue"); // Thay đổi ID nếu cần
+        imgElement.src = redled === 1 ? "./img/blue.png" : "./img/no.png"; // Thay đổi src
+      });
+
+      onValue(dbled04, (snapshot) => {
+        //green
+        const dataled01 = snapshot.val(); // Lấy giá trị boolean từ snapshot
+
+        // Khai báo biến dataledred và redled
+        let dataledred;
+        let redled;
+
+        // Gán giá trị cho biến dataledred và redled dựa trên giá trị của dataled01
+        if (dataled01) {
+          dataledred = true; // Nếu giá trị là true
+          redled = 1;
+        } else {
+          dataledred = false; // Nếu giá trị là false
+          redled = 0;
+        }
+
+        // Cập nhật thuộc tính src của img dựa trên giá trị của redled
+        const imgElement = document.getElementById("green"); // Thay đổi ID nếu cần
+        imgElement.src = redled === 1 ? "./img/green.png" : "./img/no.png"; // Thay đổi src
+      });
+
+      // led ------------------------------------------------
+
+      // Sửa hàm trạng thái nhiệt độ------------------------
+      function trangthainhietdo(tt) {
+        let trangthai;
+        if (tt > 35) {
+          trangthai = "Cao";
+        } else if (tt <= 35 && tt >= 25) {
+          trangthai = "Trung bình";
+        } else {
+          trangthai = "Thấp";
+        }
+        document.getElementById("reading-tt").innerHTML = trangthai;
+      }
+
+      // Kiểm tra nhiệt độ và phát âm thanh nếu vượt ngưỡng ---------------
+      function checkTemperature(a) {
+        if (a > 40) {
+          let audio = document.getElementById("alert-sound");
+          if (audio.paused) {
+            audio.play();
+          }
+        } else {
+          let audio = document.getElementById("alert-sound");
+          audio.pause();
+        }
+      }
+
+      // Không mất dữ liệu khi tải lại trang----------------------------
+      window.onload = function () {
+        const savedCycleData = localStorage.getItem("cycleData");
+        if (savedCycleData) {
+          cycleData = JSON.parse(savedCycleData);
+          cycleData.forEach((cycleSnapshot) => {
+            displayCycleData(cycleSnapshot);
+          });
+        }
+
+        const savedChartData = localStorage.getItem("chartData");
+        if (savedChartData) {
+          const { tempData, tempFData, humidityData, xValues } =
+            JSON.parse(savedChartData);
+
+          // Khôi phục dữ liệu biểu đồ
+          tempData.forEach((temp, index) => {
+            myChart.data.labels.push(xValues[index]);
+            myChart.data.datasets[0].data.push(temp);
+            myChart.data.datasets[1].data.push(tempFData[index]);
+            myChart.data.datasets[2].data.push(humidityData[index]);
+          });
+          myChart.update();
+        }
+      };
+
+      //=====================================
+      // Xử lý sự kiện khi nhấn nút 'Xoá biểu đồ'
+      document
+        .getElementById("clearChart")
+        .addEventListener("click", function () {
+          resetChart(); // Hàm reset biểu đồ đã có sẵn
+          console.log("Biểu đồ đã được xoá");
+        });
+
+      // Xử lý sự kiện khi nhấn nút 'Xoá bảng'
+      document
+        .getElementById("clearTable")
+        .addEventListener("click", function () {
+          const tableBody = document.getElementById("cycle-table-body");
+
+          // Xoá tất cả hàng trong bảng
+          while (tableBody.firstChild) {
+            tableBody.removeChild(tableBody.firstChild);
+          }
+
+          // Xoá dữ liệu bảng từ localStorage
+          localStorage.removeItem("cycleData");
+          console.log("Bảng đã được xoá");
+        });
+
+      // Xử lý sự kiện khi nhấn nút 'Xoá tất cả'
+      document
+        .getElementById("clearAll")
+        .addEventListener("click", function () {
+          // Gọi hàm xoá biểu đồ
+          resetChart();
+          console.log("Biểu đồ đã được xoá");
+
+          // Gọi hàm xoá bảng
+          const tableBody = document.getElementById("cycle-table-body");
+
+          while (tableBody.firstChild) {
+            tableBody.removeChild(tableBody.firstChild);
+          }
+
+          // Xoá dữ liệu bảng từ localStorage
+          localStorage.removeItem("cycleData");
+          console.log("Bảng đã được xoá");
+
+          // Xóa luôn dữ liệu biểu đồ từ localStorage
+          localStorage.removeItem("chartData");
+          console.log("Đã xoá tất cả dữ liệu biểu đồ và bảng");
+        });
+    </script>
+
+    <!--! --------------------------- -->
+  </head>
+
+  <body>
+    <div class="container">
+      <header id="header" class="header">
+
+        <nav class="header__navbar">
+            <p>LẬP TRÌNH IOT: Nhóm 10</p>
+        </nav>
+
+        <div class="header__infor">
+          <p style="color:red; font-size:2rem;">
+            Xin chào: 
+            <a href="#" class="header__accout">
+          </p>
+                <div id="accoutname" class="accoutname">
+                    <button>
+                        <i class="fa fa-sign-in-alt"></i>
+                        <div class="star-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1"
+                                style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+                                viewBox="0 0 784.11 815.53" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                <defs></defs>
+                                <g id="Layer_x0020_1">
+                                    <metadata id="CorelCorpID_0Corel-Layer"></metadata>
+                                    <path class="fil0"
+                                        d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z">
+                                    </path>
+                                </g>
+                            </svg>
+                        </div>
+                        <div class="star-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1"
+                                style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+                                viewBox="0 0 784.11 815.53" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                <defs></defs>
+                                <g id="Layer_x0020_1">
+                                    <metadata id="CorelCorpID_0Corel-Layer"></metadata>
+                                    <path class="fil0"
+                                        d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z">
+                                    </path>
+                                </g>
+                            </svg>
+                        </div>
+                        <div class="star-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1"
+                                style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+                                viewBox="0 0 784.11 815.53" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                <defs></defs>
+                                <g id="Layer_x0020_1">
+                                    <metadata id="CorelCorpID_0Corel-Layer"></metadata>
+                                    <path class="fil0"
+                                        d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z">
+                                    </path>
+                                </g>
+                            </svg>
+                        </div>
+                        <div class="star-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1"
+                                style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+                                viewBox="0 0 784.11 815.53" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                <defs></defs>
+                                <g id="Layer_x0020_1">
+                                    <metadata id="CorelCorpID_0Corel-Layer"></metadata>
+                                    <path class="fil0"
+                                        d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z">
+                                    </path>
+                                </g>
+                            </svg>
+                        </div>
+                        <div class="star-5">
+                            <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1"
+                                style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+                                viewBox="0 0 784.11 815.53" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                <defs></defs>
+                                <g id="Layer_x0020_1">
+                                    <metadata id="CorelCorpID_0Corel-Layer"></metadata>
+                                    <path class="fil0"
+                                        d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z">
+                                    </path>
+                                </g>
+                            </svg>
+                        </div>
+                        <div class="star-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1"
+                                style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+                                viewBox="0 0 784.11 815.53" xmlns:xlink="http://www.w3.org/1999/xlink">
+                                <defs></defs>
+                                <g id="Layer_x0020_1">
+                                    <metadata id="CorelCorpID_0Corel-Layer"></metadata>
+                                    <path class="fil0"
+                                        d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z">
+                                    </path>
+                                </g>
+                            </svg>
+                        </div>
+                    </button>
+
+                </div>
+            </a>
+
+            <button id="logoutBtn" style="display: block;">Logout</button>
+
+        </div>
+    </header>
+
+      <div class="center">
+        <div class="item-1">
+          <div class="item-1_center">
+            <canvas id="myChart" style="width: 100%; max-width: 700px"></canvas>
+            <h3>Tổng hợp nhiệt độ và độ ẩm</h3>
+          </div>
+          <div class="item-01_rigth">
+            <h2>Thông tin nhiệt độ</h2>
+            <p>- Nhiệt độ (°C): <span id="reading-int">0</span>.C</p>
+            <p>- Nhiệt độ (°F): <span id="reading-f">0</span>.F</p>
+            <p>- Độ ẩm: <span id="reading-float">0</span> %</p>
+            <p>-Tình trạng: <span id="reading-tt"></span>.</p>
+          </div>
+
+          <!-- Display temperature and humidity readings -->
+        </div>
+        <div class="center-list">
+          <div class="item-2">
+            <h2>Chu kỳ dữ liệu nhiệt độ và độ ẩm</h2>
+            <table id="cycle-table" border="1">
+              <thead>
+                <tr>
+                  <th>Thời gian</th>
+                  <th>Nhiệt độ (°C)</th>
+                  <th>Nhiệt độ (°F)</th>
+                  <th>Độ ẩm (%)</th>
+                </tr>
+              </thead>
+              <tbody id="cycle-table-body">
+                <!-- Các chu kỳ dữ liệu sẽ được thêm vào đây -->
+              </tbody>
+            </table>
+          </div>
+          <div class="item-3">
+            <div class="item-3_left">
+              <h2>Điều khiển LED</h2>
+              <button onclick="batLED(1); incrementClickred();">
+                Bật LED RED
+              </button>
+              <button onclick="tatLED(1); incrementClickred()">
+                Tắt LED RED
+              </button>
+              <button onclick="batLED(2); incrementClickyellow();">
+                Bật LED YELLOW
+              </button>
+              <button onclick="tatLED(2); incrementClickyellow();">
+                Tắt LED YELLOW
+              </button>
+              <button onclick="batLED(3); incrementClickblue();">
+                Bật LED BLUE
+              </button>
+              <button onclick="tatLED(3); incrementClickblue();">
+                Tắt LED BLUE
+              </button>
+              <button onclick="batLED(4); incrementClickgreen();">
+                Bật LED GREEN
+              </button>
+              <button onclick="tatLED(4); incrementClickgreen();">
+                Tắt LED GREEN
+              </button>
+            </div>
+            <div class="item-3_rigth">
+              <h2>Trạng thái led</h2>
+              <div>
+                <img src="./img/no.png" alt="" id="red" />
+                <img src="./img/no.png" alt="" id="yellow" />
+              </div>
+              <div>
+                <img src="./img/no.png" alt="" id="blue" />
+                <img src="./img/no.png" alt="" id="green" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="center-list_02">
+          <div class="item_02">
+            <div>
+              <h2>Chức năng của hệ thống</h2>
+
+              <!-- todo:Nút để reset tất cả số lần nhấp -->
+              <button onclick="resetClicks()">Delete chart Click Led</button>
+              <button id="clearChart">Delete chart temperature</button>
+              <button id="clearTable">Delete Table temperature</button>
+              <button id="clearAll" onclick="resetClicks()" style="background-color: red">
+                Delete All
+              </button>
+            </div>
+            <div>
+              <h2>Cường độ dòng điện biến trở</h2>
+              <p>
+                - Cường độ ánh sáng:
+                <span id="lightValue" style="color: black">0</span>LDR
+              </p>
+              <p>
+                - Tình trạng ánh sáng:
+                <span id="LDR_tinhtrang" style="color: black">Tốt</span>.
+              </p>
+              <br />
+              <br />
+              <br />
+              <img
+                id="conditionImage"
+                src="img/null.png"
+                alt="Tình trạng cường độ"
+                width="100"
+              />
+            </div>
+          </div>
+          <div class="item_03">
+            <h2>Số lần được thực hiện của Led</h2>
+            <div>
+              <p>Led Red: <span id="clickred">0</span>.</p>
+              <p>Led Yellow: <span id="clickyellow">0</span>.</p>
+              <p>Led Blue: <span id="clickblue">0</span>.</p>
+              <p>Led Green: <span id="clickgreen">0</span>.</p>
+            </div>
+            <div>
+              <canvas
+                id="myChartclick"
+                style="width: 100%; max-width: 600px"
+              ></canvas>
+            </div>
+
+            <!-- !========js biểu đồ cột =======-->
+
+            <script>
+              function resetChart1() {
+                tempData.length = 0;
+                tempFData.length = 0;
+                humidityData.length = 0;
+                xValues.length = 0;
+                cycleCount = 0;
+                myChart.update();
+                localStorage.removeItem("chartData"); // Xóa dữ liệu biểu đồ khỏi localStorage khi reset
+                console.log("Biểu đồ đã được reset");
+                data.length = 0;
+              }
+              // Lấy dữ liệu từ localStorage hoặc gán giá trị mặc định
+              let count = localStorage.getItem("clickred")
+                ? parseInt(localStorage.getItem("clickred"))
+                : 0;
+              let count1 = localStorage.getItem("clickyellow")
+                ? parseInt(localStorage.getItem("clickyellow"))
+                : 0;
+              let count2 = localStorage.getItem("clickblue")
+                ? parseInt(localStorage.getItem("clickblue"))
+                : 0;
+              let count3 = localStorage.getItem("clickgreen")
+                ? parseInt(localStorage.getItem("clickgreen"))
+                : 0;
+
+              // Hiển thị số lần nhấp được lưu trữ
+              document.getElementById("clickred").textContent = count;
+              document.getElementById("clickyellow").textContent = count1;
+              document.getElementById("clickblue").textContent = count2;
+              document.getElementById("clickgreen").textContent = count3;
+
+              // Tạo biểu đồ lần đầu
+              var xValues = ["Led Red", "Led Yellow", "Led Blue", "Led Green"];
+              var yValues = [count, count1, count2, count3];
+              var barColors = ["red", "yellow", "blue", "green"];
+
+              var chart = new Chart("myChartclick", {
+                type: "bar",
+                data: {
+                  labels: xValues,
+                  datasets: [
+                    {
+                      backgroundColor: barColors,
+                      data: yValues,
+                    },
+                  ],
+                },
+                options: {
+                  legend: { display: false },
+                  title: {
+                    display: true,
+                    text: "Số lần ",
+                  },
+                },
+              });
+
+              // Hàm tăng biến clickred và cập nhật biểu đồ
+              function incrementClickred() {
+                count++; // Tăng biến đếm
+                document.getElementById("clickred").textContent = count; // Cập nhật số lần nhấp trong span
+
+                // Cập nhật giá trị clickred trong mảng yValues
+                yValues[0] = count;
+
+                // Lưu giá trị vào localStorage
+                localStorage.setItem("clickred", count);
+
+                // Cập nhật lại biểu đồ với giá trị mới
+                chart.update();
+              }
+
+              function incrementClickyellow() {
+                count1++;
+                document.getElementById("clickyellow").textContent = count1; // Cập nhật số lần nhấp trong span
+
+                // Cập nhật giá trị clickyellow trong mảng yValues
+                yValues[1] = count1;
+
+                // Lưu giá trị vào localStorage
+                localStorage.setItem("clickyellow", count1);
+
+                // Cập nhật lại biểu đồ với giá trị mới
+                chart.update();
+              }
+
+              function incrementClickblue() {
+                count2++;
+                document.getElementById("clickblue").textContent = count2; // Cập nhật số lần nhấp trong span
+
+                // Cập nhật giá trị clickblue trong mảng yValues
+                yValues[2] = count2;
+
+                // Lưu giá trị vào localStorage
+                localStorage.setItem("clickblue", count2);
+
+                // Cập nhật lại biểu đồ với giá trị mới
+                chart.update();
+              }
+
+              function incrementClickgreen() {
+                count3++;
+                document.getElementById("clickgreen").textContent = count3; // Cập nhật số lần nhấp trong span
+
+                // Cập nhật giá trị clickgreen trong mảng yValues
+                yValues[3] = count3;
+
+                // Lưu giá trị vào localStorage
+                localStorage.setItem("clickgreen", count3);
+
+                // Cập nhật lại biểu đồ với giá trị mới
+                chart.update();
+              }
+
+              // Hàm reset tất cả số lần nhấp về 0
+              function resetClicks() {
+                count = 0;
+                count1 = 0;
+                count2 = 0;
+                count3 = 0;
+
+                // Cập nhật hiển thị trong span
+                document.getElementById("clickred").textContent = count;
+                document.getElementById("clickyellow").textContent = count1;
+                document.getElementById("clickblue").textContent = count2;
+                document.getElementById("clickgreen").textContent = count3;
+
+                // Cập nhật mảng yValues
+                yValues[0] = count;
+                yValues[1] = count1;
+                yValues[2] = count2;
+                yValues[3] = count3;
+
+                // Lưu giá trị vào localStorage
+                localStorage.setItem("clickred", count);
+                localStorage.setItem("clickyellow", count1);
+                localStorage.setItem("clickblue", count2);
+                localStorage.setItem("clickgreen", count3);
+
+                // Cập nhật lại biểu đồ
+                chart.update();
+              }
+            </script>
+
+            <!-- !========js biểu đồ cột =======-->
+          </div>
+          <div class="table_anhsang">
+            <!-- Bảng hiển thị dữ liệu ánh sáng -->
+              <h2 style="text-align: center; margin-top: 5%;">Bảng Dữ Liệu Ánh Sáng</h2>
+              <table class="data-table" id="lightDataTable">
+                <thead>
+                  <tr>
+                    <th>Thời Gian</th>
+                    <th>Giá Trị Ánh Sáng</th>
+                  </tr>
+                </thead>
+                <tbody id="lightDataTableBody">
+                  <!-- Dữ liệu ánh sáng sẽ được thêm vào đây -->
+                </tbody>
+              </table>
+
+          </div>
+
+          <style>
+            .table_anhsang {
+              position: relative;
+              width: 100%;
+              height: 500px;
+              background-color: rgb(224, 224, 224);
+              justify-content: center;
+              align-items: center;
+              overflow: auto;
+            }
+            /* CSS cho bảng hiển thị dữ liệu ánh sáng */
+            .data-table {
+              width: 80%;
+              margin: 20px auto;
+              border-collapse: collapse;
+              border: 1px solid #333;
+
+            }
+
+            .data-table th, .data-table td {
+              border: 1px solid #ddd;
+              padding: 8px;
+              text-align: center;
+              border: 1px solid #333;
+            }
+
+            .data-table th {
+              background-color: #f2f2f2;
+              color: #333;
+              border: 1px solid #333;
+            }
+
+            .data-table tr:nth-child(even) {
+              background-color: #f9f9f9;
+              border: 1px solid #333;
+            }
+
+            .data-table tr:hover {
+              background-color: #e2e2e2;
+              border: 1px solid #333;
+            }
+          </style>
+
+        </div>
+      </div>
+
+      <div class="footer">
+        <canvas id="myChart" style="width: 100%; max-width: 600px"></canvas>
+        <p>footer</p>
+        <audio id="alert-sound">
+          <source src="./audio/nhietdo.m4a" type="audio/mp4" />
+          Trình duyệt của bạn không hỗ trợ âm thanh.
+        </audio>
+      </div>
+    </div>
+    <script src="js.js"></script>
+    <script src="authenticate/login_signup.js"></script>
+    <script src="asset/js/script.js"></script>
+  </body>
+</html>
