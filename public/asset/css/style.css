@@ -43,8 +43,12 @@ li {
   text-transform: uppercase;
 }
 
+.header__navbar {
+  text-align: center;
+}
+
 .header__navbar p {
-  font-size: 3rem;
+  font-size: 2rem;
   font-weight: 600;
   color: #1A3636;
 }

@@ -180,14 +180,26 @@
       // Function to update chart -----------------------
       function updateChart() {
         const currentTime = new Date().toLocaleTimeString();
+      
+        // Kiểm tra xem biểu đồ có đủ 10 giá trị chưa
+        if (tempData.length >= 10) {
+          // Dịch tất cả các giá trị trong mảng sang trái và loại bỏ giá trị đầu tiên
+          tempData.shift();
+          tempFData.shift();
+          humidityData.shift();
+          xValues.shift();
+        }
+      
+        // Thêm dữ liệu mới vào cuối mảng
         xValues.push(currentTime);
         tempData.push(currentTemperature);
         tempFData.push((currentTemperature * 9) / 5 + 32);
         humidityData.push(currentHumidity);
+      
+        // Cập nhật biểu đồ
         myChart.update();
-        cycleCount++;
-
-        // Lưu dữ liệu vào localStorage
+      
+        // Lưu dữ liệu vào localStorage để duy trì khi tải lại
         localStorage.setItem(
           "chartData",
           JSON.stringify({
@@ -197,12 +209,8 @@
             xValues,
           })
         );
-
-        // Nếu đã đủ 10 dữ liệu, lưu chu kỳ và reset biểu đồ
-        if (cycleCount >= MAX_CYCLE_COUNT) {
-          saveCycle(); // Lưu chu kỳ hiện tại
-          resetChart(); // Reset biểu đồ để bắt đầu chu kỳ mới
-        }
+      
+        // Không cần reset biểu đồ khi đủ 10 giá trị
       }
 
       // Lưu chu kỳ -----------------------
@@ -223,31 +231,40 @@
       }
 
       // Hiển thị dữ liệu chu kỳ trong bảng------------------------------
-      function displayCycleData(cycleSnapshot) {
-        const table = document.getElementById("cycle-table-body");
+      // Lấy tham chiếu đến phần tử của bảng chu kỳ dữ liệu nhiệt độ và độ ẩm
+const cycleTableBody = document.getElementById("cycle-table-body");
 
-        // Hiển thị từng mục nhiệt độ, độ ẩm và thời gian
-        for (let i = 0; i < cycleSnapshot.temperatures.length; i++) {
-          let tempC = cycleSnapshot.temperatures[i];
-          let tempF = (tempC * 9) / 5 + 32;
-          let humidity = cycleSnapshot.humidities[i];
-          let time = cycleSnapshot.time[i];
+// Hàm thêm dữ liệu nhiệt độ và độ ẩm vào bảng chu kỳ
+function addCycleDataToTable(time, temperatureC, temperatureF, humidity) {
+  const newRow = document.createElement("tr");
+  newRow.innerHTML = `
+    <td>${time}</td>
+    <td>${temperatureC.toFixed(2)}°C</td>
+    <td>${temperatureF.toFixed(2)}°F</td>
+    <td>${humidity.toFixed(2)}%</td>
+  `;
+  cycleTableBody.insertBefore(newRow, cycleTableBody.firstChild); // Thêm hàng mới vào đầu bảng
+}
 
-          // Tạo một hàng mới cho mỗi lần lặp
-          let newRow = document.createElement("tr");
+// Lắng nghe sự thay đổi nhiệt độ và độ ẩm từ Firebase
+onValue(tempRef, (snapshot) => {
+  currentTemperature = snapshot.val();
+  const currentTime = new Date().toLocaleTimeString(); // Lấy thời gian hiện tại
+  const temperatureF = (currentTemperature * 9) / 5 + 32; // Chuyển đổi sang Fahrenheit
 
-          // Tạo các ô dữ liệu và thêm vào hàng mới
-          newRow.innerHTML = `
-                  <td>${time}</td>
-                  <td>${tempC.toFixed(2)}°C</td>
-                  <td>${tempF.toFixed(2)}°F</td>
-                  <td>${humidity.toFixed(2)}%</td>
-              `;
+  // Thêm dữ liệu mới vào bảng sử dụng độ ẩm hiện tại
+  addCycleDataToTable(currentTime, currentTemperature, temperatureF, currentHumidity);
+});
 
-          // Chèn hàng mới vào đầu bảng
-          table.insertBefore(newRow, table.firstChild);
-        }
-      }
+onValue(humidityRef, (snapshot) => {
+  currentHumidity = snapshot.val();
+  const currentTime = new Date().toLocaleTimeString(); // Lấy thời gian hiện tại
+  const temperatureF = (currentTemperature * 9) / 5 + 32; // Chuyển đổi sang Fahrenheit
+
+  // Thêm dữ liệu mới vào bảng sử dụng nhiệt độ hiện tại
+  addCycleDataToTable(currentTime, currentTemperature, temperatureF, currentHumidity);
+});
+
 
       // Reset biểu đồ -------------------------
       function resetChart() {
@@ -487,11 +504,13 @@
       <header id="header" class="header">
 
         <nav class="header__navbar">
-            <p>LẬP TRÌNH IOT: Nhóm 10</p>
+            <p>LẬP TRÌNH NHÚNG IOT</p>
+            <p>NHÓM 10</p>
+
         </nav>
 
         <div class="header__infor">
-          <p style="color:red; font-size:2rem;">
+          <p style="color:red; font-size:1.5rem;">
             Xin chào: 
             <a href="#" class="header__accout">
           </p>
